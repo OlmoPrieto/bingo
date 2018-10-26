@@ -18,6 +18,7 @@ public:
   ~Server();
 
   void update();
+  float lastFrameTime() const;
 
 private:
   sf::UdpSocket m_sockets[2];
