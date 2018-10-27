@@ -29,6 +29,7 @@ private:
   State m_state;
   float m_target_frame_time = 16.6667f; // Tickrate of 60 fps
   float m_last_frame_time = 0.0f;
+  uint8_t m_connection_state = 0;
 };
 
 #endif  // __CLIENT_H__
