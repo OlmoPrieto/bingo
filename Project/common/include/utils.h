@@ -1,4 +1,5 @@
 #include <vector>
+#include <cstring>
 
 class Message {
 public:
@@ -63,3 +64,19 @@ public:
   uint64_t m_data = 0;
   uint8_t  m_extra[64] = { 0 };
 };
+
+// Works by giving a path inside the resource folder
+// For example, if trying to get 'arial.ttf' font the call
+// would be: getResourcePath("fonts/arial.ttf")
+static std::string GetResourcePath(const std::string& path_to_resource) {
+  std::string resource_folder;
+  #ifdef __PLATFORM_LINUX__
+    resource_folder = "../Project/common/resources/";
+  #elif  __PLATFORM_WINDOWS__
+    resource_folder = "../common/resources/";
+  #endif
+  
+  //resource_folder += path_to_resource;
+
+  return resource_folder + path_to_resource;
+}

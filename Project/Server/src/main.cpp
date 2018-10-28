@@ -6,14 +6,16 @@
 #include <SFML/Window/Event.hpp>
 
 #include "server.h"
+#include "utils.h"
 
 int main() {
   sf::RenderWindow window(sf::VideoMode(800, 600), "WINDOW");
 
   Server server;
+  
   sf::Text fps_counter;
   sf::Font font;
-  font.loadFromFile("../common/resources/fonts/arial.ttf");
+  font.loadFromFile(GetResourcePath("fonts/arial.ttf"));
   fps_counter.setFont(font);
   fps_counter.setCharacterSize(16);
   fps_counter.setPosition(750, 10);
@@ -24,6 +26,12 @@ int main() {
   state.setPosition(340, 270);
 
   std::string state_string;
+
+  sf::Text connected_players_text;
+  connected_players_text.setFont(font);
+  connected_players_text.setCharacterSize(16);
+  connected_players_text.setPosition(15, 10);
+  std::string connected_players_string = "Connected players: ";
 
   while (window.isOpen()) {
     // Input
@@ -67,11 +75,15 @@ int main() {
     }
     state.setString(state_string);
 
+    connected_players_text.setString(connected_players_string + 
+      std::to_string(server.getConnectedPlayers()));
+
     // Draw
     window.clear();
 
     window.draw(fps_counter);
     window.draw(state);
+    window.draw(connected_players_text);
     
     window.display();
   }

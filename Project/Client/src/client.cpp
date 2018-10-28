@@ -19,8 +19,7 @@ void Client::update() {
 
   switch (m_state) {
     case State::Starting: {
-      uint8_t counter = 0;
-      while (counter < 3) { // Go throught the 3 states of the connection (simple handshake)
+      if (m_connected == false) {
         uint64_t bytes_received = 0;
         uint16_t client_port = 14195;
         uint16_t server_port = 14194;
@@ -28,7 +27,7 @@ void Client::update() {
         sf::IpAddress ip_address = sf::IpAddress::LocalHost;
         memset(buffer, 0, 1024);
         Message msg((uint64_t)Message::MsgType::ConnectionRequest,
-          counter + 1, nullptr);
+          m_connection_state + 1, nullptr);
         msg.fillBuffer(buffer, 1024);
         m_socket.send(buffer, (uint64_t)1024, 
           ip_address, server_port);
@@ -39,18 +38,18 @@ void Client::update() {
           uint64_t header = (uint64_t)buffer[0];
           if ((Message::MsgType)header == Message::MsgType::ConnectionRequest) {
             uint64_t data_received = (uint64_t)buffer[sizeof(uint64_t)];
-            if (data_received > counter) {
-              counter = data_received;
+            if (data_received > m_connection_state) {
+              m_connection_state = data_received;
             }
-            printf("Received state: %lu\n", counter);
-            // when counter reaches 3 (the end of the ACK),
-            // the server will send a last invalid packet 
-            // and will exit the while() 
+            printf("Received state: %lu\n", m_connection_state);
           }
         }
       }
 
-      m_state = State::BuyTime;
+      if (m_connection_state >= 3) {
+        m_connected = true;
+        m_state = State::BuyTime;
+      }
 
       break;
     }

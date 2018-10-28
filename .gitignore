@@ -15,6 +15,7 @@
 *.vcxproj.filters
 *.elf
 *.exe
+Makefile
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

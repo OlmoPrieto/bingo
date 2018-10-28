@@ -12,4 +12,6 @@ echo -e "\n${BLUE} -- Compiling $(DATE) --${NC}"
 
 echo -e "\n${GREEN} -- Starting execution $(DATE) --${NC}"
 
-./../Project/bin/Project
+export LD_LIBRARY_PATH=../Project/common/dependencies/SFML/lib
+
+./../Project/Server/bin/Server

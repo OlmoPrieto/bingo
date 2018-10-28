@@ -6,6 +6,7 @@
 #include <SFML/Window/Event.hpp>
 
 #include "client.h"
+#include "utils.h"
 
 int main() {
   sf::RenderWindow window(sf::VideoMode(800, 600), "WINDOW");
@@ -14,7 +15,7 @@ int main() {
 
   sf::Text fps_counter;
   sf::Font font;
-  font.loadFromFile("../common/resources/fonts/arial.ttf");
+  font.loadFromFile(GetResourcePath("fonts/arial.ttf"));
   fps_counter.setFont(font);
   fps_counter.setCharacterSize(16);
   fps_counter.setPosition(750, 10);
