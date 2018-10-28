@@ -1,4 +1,6 @@
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -10,6 +12,12 @@
 
 int main() {
   sf::RenderWindow window(sf::VideoMode(800, 600), "WINDOW");
+
+  std::chrono::high_resolution_clock frame_clock;
+  std::chrono::high_resolution_clock::time_point time1;
+  std::chrono::high_resolution_clock::time_point time2;
+  float target_frame_time = 16.6666f;
+  float last_frame_time = 0.0f;
 
   Server server;
   
@@ -50,7 +58,7 @@ int main() {
 
     // Update
     server.update();
-    fps_counter.setString(std::to_string(server.lastFrameTime()).substr(0, 5));
+    fps_counter.setString(std::to_string(last_frame_time).substr(0, 5));
     switch (server.getState()) {
       case Server::State::Starting: {
         state_string = "STARTING";
@@ -86,7 +94,25 @@ int main() {
     window.draw(connected_players_text);
     
     window.display();
-  }
+
+
+    // Lock tickrate to 60fps
+    time2 = frame_clock.now();
+    last_frame_time = std::chrono::duration_cast<std::chrono::duration<float>>(time2 - time1).count();
+    time1 = frame_clock.now();
+
+    // Sleep only for half of the remaining time to the target,
+    // because the SO may leave the thread to sleep for more
+    // than you specified.
+    if (last_frame_time < target_frame_time) {
+      std::this_thread::sleep_for(std::chrono::duration<float, std::milli>((target_frame_time - last_frame_time) * 0.5f));
+    }
+    // Spinlock the rest of the frame time to get the precise target
+    while (last_frame_time <= target_frame_time) {
+      time2 = frame_clock.now();
+      last_frame_time += std::chrono::duration_cast<std::chrono::duration<float>>(time2 - time1).count();
+    }
+  } // while (window.isOpen())
 
   return 0;
 }

@@ -1,4 +1,6 @@
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -10,7 +12,13 @@
 #include "utils.h"
 
 int main() {
-  sf::RenderWindow window(sf::VideoMode(800, 600), sf::String("WINDOW"));
+  sf::RenderWindow window(sf::VideoMode(800, 600), "");
+
+  std::chrono::high_resolution_clock frame_clock;
+  std::chrono::high_resolution_clock::time_point time1;
+  std::chrono::high_resolution_clock::time_point time2;
+  float target_frame_time = 16.6666f;
+  float last_frame_time = 0.0f;
 
   Client client;
 
@@ -28,10 +36,12 @@ int main() {
 
   std::string state_string;
 
-  Button button("+", sf::Vector2f(50.0f, 50.0f), 
-    sf::Color::White, sf::Vector2f(100.0f, 100.0f), 14);
+  Button button("A", sf::Vector2f(50.0f, 50.0f), 
+    sf::Color::White, sf::Vector2f(100.0f, 100.0f), 24);
 
   while (window.isOpen()) {
+    time1 = frame_clock.now();
+
     // Input
     sf::Event e;
     if (window.pollEvent(e)) {
@@ -48,7 +58,7 @@ int main() {
 
     // Update
     client.update();
-    fps_counter.setString(std::to_string(client.lastFrameTime()).substr(0, 5));
+    fps_counter.setString(std::to_string(last_frame_time).substr(0, 5));
     switch (client.getState()) {
       case Client::State::Starting: {
         state_string = "STARTING";
@@ -69,14 +79,32 @@ int main() {
     state.setString(state_string);
 
     // Draw
-    window.clear(sf::Color(24, 128, 255, 255));
+    window.clear(sf::Color(24, 164, 255, 255));
 
     window.draw(fps_counter);
     window.draw(state);
     button.draw(&window);
 
     window.display();
-  }
+
+
+    // Lock tickrate to 60fps
+    time2 = frame_clock.now();
+    last_frame_time = std::chrono::duration_cast<std::chrono::duration<float>>(time2 - time1).count();
+    time1 = frame_clock.now();
+
+    // Sleep only for half of the remaining time to the target,
+    // because the SO may leave the thread to sleep for more
+    // than you specified.
+    if (last_frame_time < target_frame_time) {
+      std::this_thread::sleep_for(std::chrono::duration<float, std::milli>((target_frame_time - last_frame_time) * 0.5f));
+    }
+    // Spinlock the rest of the frame time to get the precise target
+    while (last_frame_time <= target_frame_time) {
+      time2 = frame_clock.now();
+      last_frame_time += std::chrono::duration_cast<std::chrono::duration<float>>(time2 - time1).count();
+    }
+  } // while(window.isOpen())
 
   return 0;
 }

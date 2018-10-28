@@ -1,7 +1,5 @@
 #include "client.h"
 
-#include <thread>
-
 #include "utils.h"
 
 Client::Client() {
@@ -15,8 +13,6 @@ Client::~Client() {
 }
 
 void Client::update() {
-  m_time1 = m_frame_clock.now();
-
   switch (m_state) {
     case State::Starting: {
       if (m_connected == false) {
@@ -62,27 +58,6 @@ void Client::update() {
       break;
     }
   }
-
-  // Lock tickrate to 60fps
-  m_time2 = m_frame_clock.now();
-  m_last_frame_time = std::chrono::duration_cast<std::chrono::duration<float>>(m_time2 - m_time1).count();
-  m_time1 = m_frame_clock.now();
-
-  // Sleep only for half of the remaining time to the target,
-  // because the SO may leave the thread to sleep for more
-  // than you specified.
-  if (m_last_frame_time < m_target_frame_time) {
-    std::this_thread::sleep_for(std::chrono::duration<float, std::milli>((m_target_frame_time - m_last_frame_time) * 0.5f));
-  }
-  // Spinlock the rest of the frame time to get the precise target
-  while (m_last_frame_time <= m_target_frame_time) {
-    m_time2 = m_frame_clock.now();
-    m_last_frame_time += std::chrono::duration_cast<std::chrono::duration<float>>(m_time2 - m_time1).count();
-  }
-}
-
-float Client::lastFrameTime() const {
-  return m_last_frame_time;
 }
 
 Client::State Client::getState() const {
