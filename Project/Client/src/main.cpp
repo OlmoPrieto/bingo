@@ -5,11 +5,12 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Event.hpp>
 
+#include "button.h"
 #include "client.h"
 #include "utils.h"
 
 int main() {
-  sf::RenderWindow window(sf::VideoMode(800, 600), "WINDOW");
+  sf::RenderWindow window(sf::VideoMode(800, 600), sf::String("WINDOW"));
 
   Client client;
 
@@ -26,6 +27,9 @@ int main() {
   state.setPosition(340, 270);
 
   std::string state_string;
+
+  Button button("+", sf::Vector2f(50.0f, 50.0f), 
+    sf::Color::White, sf::Vector2f(100.0f, 100.0f), 14);
 
   while (window.isOpen()) {
     // Input
@@ -65,10 +69,11 @@ int main() {
     state.setString(state_string);
 
     // Draw
-    window.clear();
+    window.clear(sf::Color(24, 128, 255, 255));
 
     window.draw(fps_counter);
     window.draw(state);
+    button.draw(&window);
 
     window.display();
   }

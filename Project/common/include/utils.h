@@ -75,8 +75,13 @@ static std::string GetResourcePath(const std::string& path_to_resource) {
   #elif  __PLATFORM_WINDOWS__
     resource_folder = "../common/resources/";
   #endif
-  
-  //resource_folder += path_to_resource;
 
-  return resource_folder + path_to_resource;
+  if (path_to_resource[0] == '/') {
+    resource_folder += path_to_resource.substr(1, path_to_resource.size() - 1);
+  }
+  else {
+    resource_folder += path_to_resource;
+  }
+
+  return resource_folder;
 }
