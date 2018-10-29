@@ -26,6 +26,7 @@ private:
 	sf::Vector2f m_size;
 	bool m_can_be_pressed = true;
 	bool m_is_pressed = false;
+	bool m_mouse_was_pressed = false;
 };
 
 #endif // __BUTTON_H__
