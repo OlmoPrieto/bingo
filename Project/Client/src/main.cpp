@@ -7,7 +7,6 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Event.hpp>
 
-#include "button.h"
 #include "client.h"
 #include "utils.h"
 
@@ -21,6 +20,7 @@ int main() {
   float last_frame_time = 0.0f;
 
   Client client;
+  client.setWindowRef(&window);
 
   sf::Text fps_counter;
   sf::Font font;
@@ -32,12 +32,9 @@ int main() {
   sf::Text state;
   state.setFont(font);
   state.setCharacterSize(40);
-  state.setPosition(340, 270);
+  state.setPosition(310, 50);
 
   std::string state_string;
-
-  Button button("A", sf::Vector2f(50.0f, 50.0f), 
-    sf::Color::White, sf::Vector2f(100.0f, 100.0f), 24);
 
   while (window.isOpen()) {
     time1 = frame_clock.now();
@@ -78,14 +75,12 @@ int main() {
     }
     state.setString(state_string);
 
-    button.update(&window);
-
     // Draw
     window.clear(sf::Color(24, 164, 255, 255));
 
     window.draw(fps_counter);
     window.draw(state);
-    button.draw(&window);
+    client.draw();
 
     window.display();
 

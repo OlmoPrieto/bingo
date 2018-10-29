@@ -7,6 +7,7 @@
 
 class Button {
 public:
+	Button();
 	Button(const std::string& text, const sf::Vector2f& size, const sf::Color& color,
 		const sf::Vector2f& position, uint8_t character_size);
 	~Button();
@@ -17,8 +18,6 @@ public:
 	bool isPressed() const;
 
 private:
-	Button();
-
 	sf::RectangleShape m_shape;
 	sf::Text* m_text;	// Using a pointer is a hack: there is a strange bug related to having a sf::Text member variable and sf::RenderWindow in main.cpp
 	sf::Font m_font;
