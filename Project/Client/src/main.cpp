@@ -78,6 +78,8 @@ int main() {
     }
     state.setString(state_string);
 
+    button.update(&window);
+
     // Draw
     window.clear(sf::Color(24, 164, 255, 255));
 

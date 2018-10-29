@@ -1,0 +1,31 @@
+#ifndef __BUTTON_H__
+#define __BUTTON_H__
+
+#include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+
+class Button {
+public:
+	Button(const std::string& text, const sf::Vector2f& size, const sf::Color& color,
+		const sf::Vector2f& position, uint8_t character_size);
+	~Button();
+
+	void update(sf::RenderWindow* window);
+	void draw(sf::RenderWindow* window);
+
+	bool isPressed() const;
+
+private:
+	Button();
+
+	sf::RectangleShape m_shape;
+	sf::Text* m_text;	// Using a pointer is a hack: there is a strange bug related to having a sf::Text member variable and sf::RenderWindow in main.cpp
+	sf::Font m_font;
+	sf::Vector2f m_position;
+	sf::Vector2f m_size;
+	bool m_can_be_pressed = true;
+	bool m_is_pressed = false;
+};
+
+#endif // __BUTTON_H__
