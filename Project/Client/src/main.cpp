@@ -37,7 +37,7 @@ int main() {
 
   std::string state_string;
 
-  Card card(sf::Vector2f(200, 100), sf::Vector2f(200, 250));
+  Card card(sf::Vector2f(400, 300), sf::Vector2f(200, 250));
 
   while (window.isOpen()) {
     time1 = frame_clock.now();
