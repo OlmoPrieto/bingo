@@ -7,10 +7,13 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Event.hpp>
 
+#include "card.h"
 #include "client.h"
 #include "utils.h"
 
 int main() {
+  // sf::VideoMode vm(800, 600);
+  std::string string("");
   sf::RenderWindow window(sf::VideoMode(800, 600), "");
 
   std::chrono::high_resolution_clock frame_clock;
@@ -35,6 +38,8 @@ int main() {
   state.setPosition(310, 50);
 
   std::string state_string;
+
+  Card card(sf::Vector2f(50, 50), sf::Vector2f(100, 100));
 
   while (window.isOpen()) {
     time1 = frame_clock.now();
@@ -81,6 +86,7 @@ int main() {
     window.draw(fps_counter);
     window.draw(state);
     client.draw();
+    card.draw(&window);
 
     window.display();
 

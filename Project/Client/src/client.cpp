@@ -24,6 +24,12 @@ Client::Client() {
   m_buy_cards_text->setCharacterSize(35);
   m_buy_cards_text->setPosition(200.0f, 165.0f);
   m_buy_cards_text->setString("How many cards do you want?");
+
+  m_current_buying_time = new sf::Text();
+  m_current_buying_time->setFont(m_font);
+  m_current_buying_time->setCharacterSize(35);
+  m_current_buying_time->setPosition(550.0f, 55.0f);
+  m_current_buying_time->setString("0");
 }
 
 Client::~Client() {
@@ -31,6 +37,7 @@ Client::~Client() {
   delete m_minus_button;
   delete m_cards_bought_text;
   delete m_buy_cards_text;
+  delete m_current_buying_time;
 }
 
 void Client::setWindowRef(sf::RenderWindow* window) {
@@ -60,7 +67,6 @@ void Client::startingState() {
         if (data_received > m_connection_state) {
           m_connection_state = data_received;
         }
-        printf("Received state: %lu\n", m_connection_state);
       }
     }
   }
@@ -68,6 +74,7 @@ void Client::startingState() {
   if (m_connection_state >= 3) {
     m_connected = true;
     m_state = State::BuyTime;
+    //m_connection_state = 0; // to reuse it later
   }
 }
 
@@ -75,6 +82,25 @@ void Client::buyTimeState() {
   m_plus_button->update(m_window_ref);
   m_minus_button->update(m_window_ref);
 
+  // Manage remaining buying time received and calculated by the server
+  uint64_t bytes_received = 0;
+  uint16_t client_port = 14195;
+  uint16_t server_port = 14194;
+  uint8_t buffer[1024]; // 80 bytes should do, though
+  sf::IpAddress ip_address = sf::IpAddress::LocalHost;
+  memset(buffer, 0, 1024);
+  if (m_socket.receive(buffer, (uint64_t)1024, bytes_received,
+    ip_address, server_port) == sf::Socket::Status::Done) {
+    uint64_t header = (uint64_t)buffer[0];
+    if ((Message::MsgType)header == Message::MsgType::CurrentBuyingTime) {
+      uint64_t data_received = (uint64_t)buffer[sizeof(uint64_t)];
+      if (data_received >= 0) {
+        m_current_buying_time->setString(std::to_string(data_received));
+      }
+    }
+  }
+
+  // Handle buttons
   bool plus_button_pressed = m_plus_button->isPressed();
   bool minus_button_pressed = m_minus_button->isPressed();
 
@@ -126,6 +152,7 @@ void Client::draw() {
   
     m_window_ref->draw(*m_cards_bought_text);
     m_window_ref->draw(*m_buy_cards_text);
+    m_window_ref->draw(*m_current_buying_time);
   }
 }
 

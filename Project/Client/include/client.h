@@ -32,12 +32,13 @@ private:
 
   sf::UdpSocket m_socket;
   sf::Font m_font;
-  sf::Text* m_cards_bought_text;
-  sf::Text* m_buy_cards_text;
   State m_state;
   Button* m_plus_button = nullptr;
   Button* m_minus_button = nullptr;
   sf::RenderWindow* m_window_ref = nullptr;
+  sf::Text* m_cards_bought_text = nullptr;
+  sf::Text* m_buy_cards_text = nullptr;
+  sf::Text* m_current_buying_time = nullptr;
   uint8_t m_cards_bought = 0;
   uint8_t m_connection_state = 0;
   bool m_connected = false;

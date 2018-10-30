@@ -57,7 +57,7 @@ int main() {
     }
 
     // Update
-    server.update();
+    server.update(last_frame_time);
     fps_counter.setString(std::to_string(last_frame_time).substr(0, 5));
     switch (server.getState()) {
       case Server::State::Starting: {

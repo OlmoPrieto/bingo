@@ -1,3 +1,6 @@
+#ifndef __UTILS_H__
+#define __UTILS_H__
+
 #include <vector>
 #include <cstring>
 
@@ -85,3 +88,5 @@ static std::string GetResourcePath(const std::string& path_to_resource) {
 
   return resource_folder;
 }
+
+#endif // __UTILS_H__
