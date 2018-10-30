@@ -125,16 +125,16 @@ solution "Project"
       defines { "__PLATFORM_MACOSX__" }
        
     configuration { "linux" }
-      links {
-        "X11", "Xrandr", "Xcursor", "Xinerama", "Xi", "Xxf86vm", "rt", "pthread", "GL", "glut", "GLU", "m"
-      }
-      includedirs {
-        "/usr/include/GL/"
-      }
-      libdirs {
-        "/usr/bin/",
-        "/usr/lib/"
-      }
+      -- links {
+      --   "X11", "Xrandr", "Xcursor", "Xinerama", "Xi", "Xxf86vm", "rt", "pthread", "GL", "glut", "GLU", "m"
+      -- }
+      -- includedirs {
+      --   "/usr/include/GL/"
+      -- }
+      -- libdirs {
+      --   "/usr/bin/",
+      --   "/usr/lib/"
+      -- }
       defines { "__PLATFORM_LINUX__" }
 
 
@@ -163,4 +163,9 @@ solution "Project"
         "sfml-graphics",
         "sfml-audio",
         "sfml-network",
+        -- "sfml-system2.5",
+        -- "sfml-window2.5",
+        -- "sfml-graphics2.5",
+        -- "sfml-audio2.5",
+        -- "sfml-network2.5",
       }

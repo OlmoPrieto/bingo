@@ -19,7 +19,7 @@ public:
 
 private:
 	sf::RectangleShape m_shape;
-	sf::Text* m_text;	// Using a pointer is a hack: there is a strange bug related to having a sf::Text member variable and sf::RenderWindow in main.cpp
+	sf::Text m_text;
 	sf::Font m_font;
 	sf::Vector2f m_position;
 	sf::Vector2f m_size;

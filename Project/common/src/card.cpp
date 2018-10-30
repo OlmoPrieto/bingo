@@ -43,7 +43,7 @@ Card::Card(const sf::Vector2f& size, const sf::Vector2f& position) {
 		m_texts[i].setString("00");
 		sf::FloatRect text_bounds = m_texts[i].getGlobalBounds();
 		m_texts[i].setPosition((position.x + size.x * 0.5f) - (text_bounds.width * 0.5f),
-		(position.y + size.y * 0.5f) - (text_bounds.height * 0.5f));
+		(position.y + size.y * 0.5f) - (text_bounds.height * 0.785f));
 	}
 }
 

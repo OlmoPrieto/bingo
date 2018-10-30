@@ -12,8 +12,6 @@
 #include "utils.h"
 
 int main() {
-  // sf::VideoMode vm(800, 600);
-  std::string string("");
   sf::RenderWindow window(sf::VideoMode(800, 600), "");
 
   std::chrono::high_resolution_clock frame_clock;
