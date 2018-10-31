@@ -19,8 +19,8 @@ public:
 
 private:
 	sf::RectangleShape m_shape;
-	sf::Text m_text;
 	sf::Font m_font;
+	sf::Text m_text;
 	sf::Vector2f m_position;
 	sf::Vector2f m_size;
 	bool m_can_be_pressed = true;

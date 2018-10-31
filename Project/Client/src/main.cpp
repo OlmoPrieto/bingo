@@ -7,7 +7,6 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Event.hpp>
 
-#include "card.h"
 #include "client.h"
 #include "utils.h"
 
@@ -36,8 +35,6 @@ int main() {
   state.setPosition(310, 50);
 
   std::string state_string;
-
-  Card card(sf::Vector2f(400, 300), sf::Vector2f(200, 250));
 
   while (window.isOpen()) {
     time1 = frame_clock.now();
@@ -84,7 +81,6 @@ int main() {
     window.draw(fps_counter);
     window.draw(state);
     client.draw();
-    card.draw(&window);
 
     window.display();
 

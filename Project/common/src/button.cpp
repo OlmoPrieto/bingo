@@ -44,16 +44,32 @@ Button::Button(const std::string& text, const sf::Vector2f& size, const sf::Colo
 
 	m_text.setFont(m_font);
 	m_text.setString(text);
-	m_text.setCharacterSize(character_size);
+	m_text.setCharacterSize(((size.x / text.size()) + size.y) * 0.5f);
 	m_text.setColor(sf::Color::Black);
 	sf::FloatRect text_bounds = m_text.getLocalBounds();
 	m_text.setOrigin(text_bounds.width * 0.5f, text_bounds.height * 0.5f);
-	// m_text.setPosition((position.x + size.x * 0.5f) - (text_bounds.width * 0.5f),
-	// 	(position.y + size.y * 0.5f) - (text_bounds.height * 0.5f));
-	// m_text.setPosition((position.x) - (text_bounds.width * 0.5f),
-	// 	(position.y) - (text_bounds.height));
-	m_text.setPosition(position.x - text_bounds.width * 0.25f,
-		position.y - text_bounds.height * 0.5f);
+	// m_text.setPosition(position.x - text_bounds.width * 0.25f,
+	// 	position.y - text_bounds.height * 0.5f);
+	float extra_x_offset = 0.0f;
+	float extra_y_offset = 0.0f;
+	if (text.size() == 1) {
+		switch (text[0]) {
+			case '+': {
+				extra_x_offset = text_bounds.width * 0.15f;
+				extra_y_offset = text_bounds.height * 0.5f;
+				
+				break;
+			}
+			case '-': {
+				extra_x_offset = text_bounds.width * 0.15f;
+				extra_y_offset = text_bounds.height * 7.5f;
+
+				break;
+			}
+		}
+	}
+	m_text.setPosition(position.x - extra_x_offset, 
+		position.y - extra_y_offset - text_bounds.height * 0.33f);
 }
 
 Button::~Button() {

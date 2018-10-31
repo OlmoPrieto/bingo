@@ -7,37 +7,26 @@ Client::Client() {
   m_socket.bind(14195);
   m_socket.setBlocking(false);
 
-  m_plus_button = new Button("+", sf::Vector2f(35.0f, 35.0f), 
-    sf::Color::White, sf::Vector2f(485.0f, 250.0f), 18);
-  m_minus_button = new Button("-", sf::Vector2f(35.0f, 35.0f), 
-    sf::Color::White, sf::Vector2f(485.0f, 295.0f), 18);
-
   m_font.loadFromFile(GetResourcePath("fonts/arial.ttf"));
-  m_cards_bought_text = new sf::Text();
-  m_cards_bought_text->setFont(m_font);
-  m_cards_bought_text->setCharacterSize(60);
-  m_cards_bought_text->setPosition(385.0f, 235.0f);
-  m_cards_bought_text->setString(std::to_string(m_cards_bought));
 
-  m_buy_cards_text = new sf::Text();
-  m_buy_cards_text->setFont(m_font);
-  m_buy_cards_text->setCharacterSize(35);
-  m_buy_cards_text->setPosition(200.0f, 165.0f);
-  m_buy_cards_text->setString("How many cards do you want?");
+  m_cards_bought_text.setFont(m_font);
+  m_cards_bought_text.setCharacterSize(60);
+  m_cards_bought_text.setPosition(385.0f, 235.0f);
+  m_cards_bought_text.setString(std::to_string(m_cards_bought));
 
-  m_current_buying_time = new sf::Text();
-  m_current_buying_time->setFont(m_font);
-  m_current_buying_time->setCharacterSize(35);
-  m_current_buying_time->setPosition(550.0f, 55.0f);
-  m_current_buying_time->setString("0");
+  m_buy_cards_text.setFont(m_font);
+  m_buy_cards_text.setCharacterSize(35);
+  m_buy_cards_text.setPosition(200.0f, 165.0f);
+  m_buy_cards_text.setString("How many cards do you want?");
+
+  m_current_buying_time.setFont(m_font);
+  m_current_buying_time.setCharacterSize(35);
+  m_current_buying_time.setPosition(550.0f, 55.0f);
+  m_current_buying_time.setString("0");
 }
 
 Client::~Client() {
-  delete m_plus_button;
-  delete m_minus_button;
-  delete m_cards_bought_text;
-  delete m_buy_cards_text;
-  delete m_current_buying_time;
+
 }
 
 void Client::setWindowRef(sf::RenderWindow* window) {
@@ -79,8 +68,9 @@ void Client::startingState() {
 }
 
 void Client::buyTimeState() {
-  m_plus_button->update(m_window_ref);
-  m_minus_button->update(m_window_ref);
+  m_plus_button.update(m_window_ref);
+  m_minus_button.update(m_window_ref);
+  m_confirm_purchase_button.update(m_window_ref);
 
   // Manage remaining buying time received and calculated by the server
   uint64_t bytes_received = 0;
@@ -95,17 +85,17 @@ void Client::buyTimeState() {
     if ((Message::MsgType)header == Message::MsgType::CurrentBuyingTime) {
       uint64_t data_received = (uint64_t)buffer[sizeof(uint64_t)];
       if (data_received >= 0) {
-        m_current_buying_time->setString(std::to_string(data_received));
+        m_current_buying_time.setString(std::to_string(data_received));
       }
     }
   }
 
   // Handle buttons
-  bool plus_button_pressed = m_plus_button->isPressed();
-  bool minus_button_pressed = m_minus_button->isPressed();
+  bool plus_button_pressed = m_plus_button.isPressed();
+  bool minus_button_pressed = m_minus_button.isPressed();
 
   if (plus_button_pressed && m_plus_button_was_pressed == false) {
-    if (m_cards_bought < 4) {
+    if (m_cards_bought < MAX_BUYABLE_CARDS) {
       ++m_cards_bought;
     }
   }
@@ -115,7 +105,7 @@ void Client::buyTimeState() {
     }
   }
 
-  m_cards_bought_text->setString(std::to_string(m_cards_bought));
+  m_cards_bought_text.setString(std::to_string(m_cards_bought));
 
   m_plus_button_was_pressed = plus_button_pressed;
   m_minus_button_was_pressed = minus_button_pressed;
@@ -147,12 +137,13 @@ void Client::update() {
 
 void Client::draw() {
   if (m_state == State::BuyTime) {
-    m_plus_button->draw(m_window_ref);
-    m_minus_button->draw(m_window_ref);
+    m_plus_button.draw(m_window_ref);
+    m_minus_button.draw(m_window_ref);
+    m_confirm_purchase_button.draw(m_window_ref);
   
-    m_window_ref->draw(*m_cards_bought_text);
-    m_window_ref->draw(*m_buy_cards_text);
-    m_window_ref->draw(*m_current_buying_time);
+    m_window_ref->draw(m_cards_bought_text);
+    m_window_ref->draw(m_buy_cards_text);
+    m_window_ref->draw(m_current_buying_time);
   }
 }
 
