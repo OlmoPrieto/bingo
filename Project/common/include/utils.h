@@ -8,8 +8,9 @@ class Message {
 public:
   enum class MsgType {
     ConnectionRequest = 0,  // + Status   -> [1, 3]
+    Handshake,              // + Status   -> [1, 3]
     CurrentBuyingTime,      // + Current  -> [0, X]
-    BoughtCards,            // + Player   -> [1, 2]   + Amount   -> [0, 4]
+    BoughtCards,            // + Amount   -> [0, 4]
     CardNumbers,            // + CardID   -> [0, 3]   + 15 numbers separated by '#'
     NumberWithdrawn,        // + Current  -> [1, 90]
     LineScored,             // + Player   -> [1, 2]
@@ -60,6 +61,12 @@ public:
     for (uint64_t i = 0; i < numbers.size(); i += 2) {
       m_extra[(uint8_t)i] = numbers[i];
       m_extra[(uint8_t)i] = (uint8_t)('#');
+    }
+  }
+
+  void getCardNumbers(std::vector<uint8_t>* v) {
+    for (uint8_t i = 0; i < 29; i += 2) {  // 29 = 15 numbers + 14 '#'
+      v->push_back(m_extra[i]);
     }
   }
 

@@ -64,7 +64,7 @@ void Client::startingState() {
     m_connected = true;
     m_state = State::BuyTime;
     m_display_buttons = true;
-    //m_connection_state = 0; // to reuse it later
+    m_connection_state = 0; // to reuse it later
   }
 }
 

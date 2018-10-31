@@ -1,7 +1,11 @@
 #ifndef __SERVER_H__
 #define __SERVER_H__
 
+#include <vector>
+
 #include <SFML/Network/UdpSocket.hpp>
+
+#include "utils.h"
 
 constexpr uint8_t MAX_PLAYERS = 2;
 
@@ -23,15 +27,19 @@ public:
   uint8_t getConnectedPlayers() const;
 
 private:
+  uint8_t connectionHandshake(uint8_t socket_index, 
+    Message::MsgType msg_type = Message::MsgType::Handshake);
   void startingState();
   void buyTimeState(float dt);
   void gameState();
   void errorState();
 
-  sf::UdpSocket m_sockets[2];
+  sf::UdpSocket m_sockets[MAX_PLAYERS];
+  std::vector<std::vector<uint8_t> > m_cards_numbers[MAX_PLAYERS];  // one for each player
   State m_state;
   float m_remaining_buy_time = 30.0f * 1000.0f; // 30 seconds * milliseconds/seconds
   uint8_t m_players_connection_state[MAX_PLAYERS] = { 0 };
+  uint8_t m_cards_bought[MAX_PLAYERS] = { 0 };
   bool m_connected_players[MAX_PLAYERS] = { false };
 };
 
