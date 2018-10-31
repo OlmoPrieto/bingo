@@ -63,15 +63,80 @@ void Client::startingState() {
   if (m_connection_state >= 3) {
     m_connected = true;
     m_state = State::BuyTime;
+    m_display_buttons = true;
     //m_connection_state = 0; // to reuse it later
   }
 }
 
-void Client::buyTimeState() {
-  m_plus_button.update(m_window_ref);
-  m_minus_button.update(m_window_ref);
-  m_confirm_purchase_button.update(m_window_ref);
+void Client::setBoughtCardsDistribution() {
+  sf::Vector2f size;
+  sf::Vector2f position;
+  sf::Vector2u window_size = m_window_ref->getSize();
+  switch (m_cards_bought) {
+    case 1: {
+      size.x = window_size.x * 0.5f;
+      size.y = size.x * 0.5f;
+      position.x = window_size.x * 0.5f - size.x * 0.5f;
+      position.y = window_size.y * 0.5f;
 
+      m_cards[0].create(size, position);
+
+      break;
+    }
+    case 2: {
+      size.x = window_size.x * 0.4f; 
+      size.y = size.x * 0.5f;
+
+      position.x = window_size.x * 0.25f - size.x * 0.5f;
+      position.y = window_size.y * 0.5f;
+      m_cards[0].create(size, position);
+
+      position.x = window_size.x * 0.75f - size.x * 0.5f;
+      m_cards[1].create(size, position);
+
+      break;
+    }
+    case 3: {
+      size.x = window_size.x * 0.35f; 
+      size.y = size.x * 0.5f;
+      
+      position.x = window_size.x * 0.25f - size.x * 0.5f;
+      position.y = window_size.y * 0.4f;
+      m_cards[0].create(size, position);
+
+      position.x = window_size.x * 0.75f - size.x * 0.5f;
+      m_cards[1].create(size, position);
+
+      position.x = window_size.x * 0.5f - size.x * 0.5f;
+      position.y += size.y * 1.25f;
+      m_cards[2].create(size, position);
+
+      break;
+    }
+    case 4: {
+      size.x = window_size.x * 0.3f;
+      size.y = size.x * 0.5f;
+
+      position.x = window_size.x * 0.25f - size.x * 0.5f;
+      position.y = window_size.y * 0.4f;
+      m_cards[0].create(size, position);
+
+      position.x = window_size.x * 0.75f - size.x * 0.5f;
+      m_cards[1].create(size, position);
+
+      position.x = window_size.x * 0.25f - size.x * 0.5f;
+      position.y += size.y * 1.25f;
+      m_cards[2].create(size, position);
+
+      position.x = window_size.x * 0.75f - size.x * 0.5f;
+      m_cards[3].create(size, position);
+
+      break;
+    }
+  }
+}
+
+void Client::buyTimeState() {
   // Manage remaining buying time received and calculated by the server
   uint64_t bytes_received = 0;
   uint16_t client_port = 14195;
@@ -91,24 +156,41 @@ void Client::buyTimeState() {
   }
 
   // Handle buttons
-  bool plus_button_pressed = m_plus_button.isPressed();
-  bool minus_button_pressed = m_minus_button.isPressed();
+  if (m_display_buttons == true) {
+    m_plus_button.update(m_window_ref);
+    m_minus_button.update(m_window_ref);
+    m_confirm_purchase_button.update(m_window_ref);
 
-  if (plus_button_pressed && m_plus_button_was_pressed == false) {
-    if (m_cards_bought < MAX_BUYABLE_CARDS) {
-      ++m_cards_bought;
+    bool plus_button_pressed = m_plus_button.isPressed();
+    bool minus_button_pressed = m_minus_button.isPressed();
+    bool purchase_button_pressed = m_confirm_purchase_button.isPressed();
+
+    if (plus_button_pressed && m_plus_button_was_pressed == false) {
+      if (m_cards_bought < MAX_BUYABLE_CARDS) {
+        ++m_cards_bought;
+      }
     }
-  }
-  else if (minus_button_pressed && m_minus_button_was_pressed == false) {
-    if (m_cards_bought > 0) {
-      --m_cards_bought;
+    else if (minus_button_pressed && m_minus_button_was_pressed == false) {
+      if (m_cards_bought > 0) {
+        --m_cards_bought;
+      }
     }
+    else if (purchase_button_pressed && m_confirm_purchase_button_was_pressed == false) {
+      if (m_cards_bought > 0) {
+        m_display_buttons = false;
+        setBoughtCardsDistribution();
+      }
+    }
+
+    m_cards_bought_text.setString(std::to_string(m_cards_bought));
+
+    m_plus_button_was_pressed = plus_button_pressed;
+    m_minus_button_was_pressed = minus_button_pressed;
+    m_confirm_purchase_button_was_pressed = purchase_button_pressed;
   }
+  else {  // If not displaying buttons, the bought cards are displayed
 
-  m_cards_bought_text.setString(std::to_string(m_cards_bought));
-
-  m_plus_button_was_pressed = plus_button_pressed;
-  m_minus_button_was_pressed = minus_button_pressed;
+  }
 }
 
 void Client::gameState() {
@@ -137,13 +219,20 @@ void Client::update() {
 
 void Client::draw() {
   if (m_state == State::BuyTime) {
-    m_plus_button.draw(m_window_ref);
-    m_minus_button.draw(m_window_ref);
-    m_confirm_purchase_button.draw(m_window_ref);
-  
-    m_window_ref->draw(m_cards_bought_text);
-    m_window_ref->draw(m_buy_cards_text);
-    m_window_ref->draw(m_current_buying_time);
+    if (m_display_buttons == true) {
+      m_plus_button.draw(m_window_ref);
+      m_minus_button.draw(m_window_ref);
+      m_confirm_purchase_button.draw(m_window_ref);
+    
+      m_window_ref->draw(m_cards_bought_text);
+      m_window_ref->draw(m_buy_cards_text);
+      m_window_ref->draw(m_current_buying_time);
+    }
+    else {
+      for (uint8_t i = 0; i < m_cards_bought; ++i) {
+        m_cards[i].draw(m_window_ref);
+      }
+    }
   }
 }
 

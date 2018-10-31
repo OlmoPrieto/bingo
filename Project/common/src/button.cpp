@@ -48,8 +48,6 @@ Button::Button(const std::string& text, const sf::Vector2f& size, const sf::Colo
 	m_text.setColor(sf::Color::Black);
 	sf::FloatRect text_bounds = m_text.getLocalBounds();
 	m_text.setOrigin(text_bounds.width * 0.5f, text_bounds.height * 0.5f);
-	// m_text.setPosition(position.x - text_bounds.width * 0.25f,
-	// 	position.y - text_bounds.height * 0.5f);
 	float extra_x_offset = 0.0f;
 	float extra_y_offset = 0.0f;
 	if (text.size() == 1) {

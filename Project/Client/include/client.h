@@ -6,6 +6,7 @@
 #include <SFML/Network/UdpSocket.hpp>
 
 #include "button.h"
+#include "card.h"
 
 constexpr uint8_t MAX_BUYABLE_CARDS = 4;
 
@@ -31,6 +32,7 @@ private:
   void startingState();
   void buyTimeState();
   void gameState();
+  void setBoughtCardsDistribution();
 
   sf::UdpSocket m_socket;
   sf::Font m_font;
@@ -44,12 +46,15 @@ private:
   Button m_confirm_purchase_button = { "Purchase", sf::Vector2f(150, 35.0f), 
     sf::Color::White, sf::Vector2f(600.0f, 275.0f), 24 };
   State m_state;
+  Card m_cards[MAX_BUYABLE_CARDS];
   sf::RenderWindow* m_window_ref = nullptr;
   uint8_t m_cards_bought = 0;
   uint8_t m_connection_state = 0;
   bool m_connected = false;
+  bool m_display_buttons = false;
   bool m_plus_button_was_pressed = false;
   bool m_minus_button_was_pressed = false;
+  bool m_confirm_purchase_button_was_pressed = false;
 };
 
 #endif  // __CLIENT_H__
