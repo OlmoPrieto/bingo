@@ -27,6 +27,10 @@ public:
   uint8_t getConnectedPlayers() const;
 
 private:
+  struct PlayerState {
+    sf::IpAddress ip_address; 
+  };
+
   uint8_t connectionHandshake(uint8_t socket_index, 
     Message::MsgType msg_type = Message::MsgType::Handshake);
   void startingState();

@@ -11,7 +11,9 @@ public:
     Handshake,              // + Status   -> [1, 3]
     CurrentBuyingTime,      // + Current  -> [0, X]
     BoughtCards,            // + Amount   -> [0, 4]
+    BoughtCardsReceived,    // + Status   -> [1, 1]
     CardNumbers,            // + CardID   -> [0, 3]   + 15 numbers separated by '#'
+    CardNumbersReceived,    // + Status   -> [1, 1]
     NumberWithdrawn,        // + Current  -> [1, 90]
     LineScored,             // + Player   -> [1, 2]
     BingoScored,            // + Player   -> [1, 2]

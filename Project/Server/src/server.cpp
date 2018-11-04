@@ -13,14 +13,18 @@ Server::Server() {
   m_sockets[1].bind(14196);
   m_sockets[1].setBlocking(false);
 
-  m_cards_numbers[0].reserve(4);  // reserve space for at least 4 cards
-  for (uint8_t i = 0; i < 4; ++i) {
-    m_cards_numbers[0][i].reserve(15);  // reserve space for 15 numbers
-  }
-  m_cards_numbers[1].reserve(4);
-  for (uint8_t i = 0; i < 4; ++i) {
-    m_cards_numbers[1][i].reserve(15);
-  }
+  // This below causes more problems that it solves.
+  // The thing is that reserve causes a memory problem sometimes
+  // when trying to std::allocate_and_copy
+  //
+  // m_cards_numbers[0].reserve(4);  // reserve space for at least 4 cards
+  // for (uint8_t i = 0; i < 4; ++i) {
+  //   m_cards_numbers[0].operator[](i).reserve(15);  // reserve space for 15 numbers
+  // }
+  // m_cards_numbers[1].reserve(4);
+  // for (uint8_t i = 0; i < 4; ++i) {
+  //   m_cards_numbers[1].operator[](i).reserve(15);
+  // }
 }
 
 Server::~Server() {
@@ -37,6 +41,8 @@ uint8_t Server::connectionHandshake(uint8_t socket_index, Message::MsgType msg_t
   if (m_sockets[socket_index].receive(buffer, (uint64_t)1024, bytes_received,
     ip_address, client_port) == sf::Socket::Status::Done) {
   
+    printf("Got address: %s\n", ip_address.toString().c_str());
+
     // Check if the received packet contains a connecting request
     uint64_t header = (uint64_t)buffer[0];
     if ((Message::MsgType)header == msg_type) {
@@ -167,7 +173,7 @@ void Server::buyTimeState(float dt) {
           uint64_t card_index = (uint64_t)buffer[sizeof(uint64_t)];
           Message msg((uint64_t)Message::MsgType::CardNumbers,
             card_index, buffer + sizeof(uint64_t) * 2);
-          msg.getCardNumbers(&m_cards_numbers[i][card_index]);
+          msg.getCardNumbers(&m_cards_numbers[i].operator[](card_index));
         }
       }
     }
