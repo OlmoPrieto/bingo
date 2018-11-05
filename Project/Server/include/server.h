@@ -28,7 +28,7 @@ public:
 private:
   struct PlayerState {
     std::vector<std::vector<uint8_t> > cards_numbers;
-    sf::IpAddress ip_address;
+    sf::IpAddress ip_address = sf::IpAddress::Any;
     uint8_t connection_state = 0;
     uint8_t cards_bought = 0;
     bool connected = false;
@@ -42,13 +42,9 @@ private:
   void errorState();
 
   sf::UdpSocket m_sockets[MAX_PLAYERS];
-  //std::vector<std::vector<uint8_t> > m_cards_numbers[MAX_PLAYERS];  // one for each player
   PlayerState m_players_states[MAX_PLAYERS];
   State m_state;
   float m_remaining_buy_time = 30.0f * 1000.0f; // 30 seconds * milliseconds/seconds
-  //uint8_t m_players_connection_state[MAX_PLAYERS] = { 0 };
-  //uint8_t m_cards_bought[MAX_PLAYERS] = { 0 };
-  //bool m_connected_players[MAX_PLAYERS] = { false };
 };
 
 #endif // __SERVER_H__

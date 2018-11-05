@@ -36,7 +36,6 @@ void Client::setWindowRef(sf::RenderWindow* window) {
 void Client::startingState() {
   if (m_connected == false) {
     uint64_t bytes_received = 0;
-    uint16_t client_port = 14195;
     uint16_t server_port = 14194;
     uint8_t buffer[1024]; // 80 bytes should do, though
     sf::IpAddress ip_address = sf::IpAddress::LocalHost;
@@ -139,7 +138,6 @@ void Client::setBoughtCardsDistribution() {
 void Client::buyTimeState() {
   // Manage remaining buying time received and calculated by the server
   uint64_t bytes_received = 0;
-  uint16_t client_port = 14195;
   uint16_t server_port = 14194;
   uint8_t buffer[1024]; // 80 bytes should do, though
   sf::IpAddress ip_address = sf::IpAddress::LocalHost;
