@@ -8,8 +8,6 @@ Server::Server() {
   m_sockets[0].bind(14194);
   m_sockets[0].setBlocking(false);
 
-  printf("Server starting\n");
-
   m_sockets[1].bind(14196);
   m_sockets[1].setBlocking(false);
 
@@ -31,7 +29,7 @@ Server::~Server() {
 
 }
 
-uint8_t Server::connectionHandshake(uint8_t socket_index, Message::MsgType msg_type) {
+void Server::connectionHandshake(uint8_t socket_index, Message::MsgType msg_type) {
   uint64_t bytes_received = 0;
   uint16_t server_port = 14194;
   uint16_t client_port = 14195;
@@ -40,15 +38,14 @@ uint8_t Server::connectionHandshake(uint8_t socket_index, Message::MsgType msg_t
   memset(buffer, 0, 1024);
   if (m_sockets[socket_index].receive(buffer, (uint64_t)1024, bytes_received,
     ip_address, client_port) == sf::Socket::Status::Done) {
-  
-    printf("Got address: %s\n", ip_address.toString().c_str());
 
     // Check if the received packet contains a connecting request
     uint64_t header = (uint64_t)buffer[0];
     if ((Message::MsgType)header == msg_type) {
       uint64_t data_received = (uint64_t)buffer[sizeof(uint64_t)];
-      if (data_received > m_players_connection_state[socket_index]) {
-        m_players_connection_state[socket_index] = data_received;
+      if (data_received > m_players_states[socket_index].connection_state) {
+        //m_players_connection_state[socket_index] = data_received;
+        m_players_states[socket_index].connection_state = data_received;
       }
 
       // if (m_players_connection_state[i] >= 3) {
@@ -57,8 +54,10 @@ uint8_t Server::connectionHandshake(uint8_t socket_index, Message::MsgType msg_t
       // }
 
       memset(buffer, 0, 1024);
+      /*Message msg((uint64_t)msg_type,
+        m_players_connection_state[socket_index] + 1, nullptr);*/
       Message msg((uint64_t)msg_type,
-        m_players_connection_state[socket_index] + 1, nullptr);
+        m_players_states[socket_index].connection_state + 1, nullptr);
       msg.fillBuffer(buffer, 1024);
       m_sockets[socket_index].send(buffer, (uint64_t)1024,
         ip_address, client_port);
@@ -75,49 +74,14 @@ uint8_t Server::connectionHandshake(uint8_t socket_index, Message::MsgType msg_t
 void Server::startingState() {
   if (getConnectedPlayers() < 1) {
     for (uint8_t i = 0; i < MAX_PLAYERS; ++i) {
-      // uint64_t bytes_received = 0;
-      // uint16_t server_port = 14194;
-      // uint16_t client_port = 14195;
-      // uint8_t buffer[1024]; // 80 bytes should do, though
-      // sf::IpAddress ip_address = sf::IpAddress::LocalHost;
-      // memset(buffer, 0, 1024);
-      // if (m_sockets[0].receive(buffer, (uint64_t)1024, bytes_received,
-      //   ip_address, client_port) == sf::Socket::Status::Done) {
-      
-      //   // Check if the received packet contains a connecting request
-      //   uint64_t header = (uint64_t)buffer[0];
-      //   if ((Message::MsgType)header == Message::MsgType::ConnectionRequest) {
-      //     uint64_t data_received = (uint64_t)buffer[sizeof(uint64_t)];
-      //     if (data_received > m_players_connection_state[i]) {
-      //       m_players_connection_state[i] = data_received;
-      //     }
-
-      //     // if (m_players_connection_state[i] >= 3) {
-      //     //   m_connected_players[i] = true;
-      //     //   //m_players_connection_state[i] = 0;  // to reuse it later
-      //     // }
-
-      //     memset(buffer, 0, 1024);
-      //     Message msg((uint64_t)Message::MsgType::ConnectionRequest,
-      //       m_players_connection_state[i] + 1, nullptr);
-      //     msg.fillBuffer(buffer, 1024);
-      //     m_sockets[0].send(buffer, (uint64_t)1024,
-      //       ip_address, client_port);
-
-      //     if (m_players_connection_state[i] >= 3) {
-      //       m_connected_players[i] = true;
-      //       m_players_connection_state[i] = 0;  // to reuse it later
-      //       // if this instruction is not here in the end, it wouldn't work
-      //     }
-      //   }
-      // }
-      // m_players_connection_state[i] = connectionHandshake(i, 
-      //   Message::MsgType::ConnectionRequest);
-      connectionHandshake(i, 
-        Message::MsgType::ConnectionRequest);
-      if (m_players_connection_state[i] >= 3) {
-        m_connected_players[i] = true;
-        m_players_connection_state[i] = 0;  // to reuse it later
+      connectionHandshake(i, Message::MsgType::ConnectionRequest);
+      //if (m_players_connection_state[i] >= 3) {
+      //  m_connected_players[i] = true;
+      //  m_players_connection_state[i] = 0;  // to reuse it later
+      //}
+      if (m_players_states[i].connection_state >= 3) {
+        m_players_states[i].connected = true;
+        m_players_states[i].connection_state = 0; // to reuse it later
       }
     }
   }
@@ -155,13 +119,13 @@ void Server::buyTimeState(float dt) {
       // Check if the received packet contains a card bought message
       uint64_t header = (uint64_t)buffer[0];
       if ((Message::MsgType)header == Message::MsgType::BoughtCards) {
-        //uint64_t data_received = (uint64_t)buffer[sizeof(uint64_t)];
-        m_cards_bought[i] = (uint64_t)buffer[sizeof(uint64_t)];
+        //m_cards_bought[i] = (uint64_t)buffer[sizeof(uint64_t)];
+        m_players_states[i].cards_bought = (uint64_t)buffer[sizeof(uint64_t)];
       }
     }
 
     // Check for card numbers
-    if (m_cards_bought[i] > 0) {
+    if (m_players_states[i].cards_bought > 0) {
       bytes_received = 0;
       memset(buffer, 0, 1024);
       if (m_sockets[i].receive(buffer, (uint64_t)1024, bytes_received,
@@ -173,7 +137,7 @@ void Server::buyTimeState(float dt) {
           uint64_t card_index = (uint64_t)buffer[sizeof(uint64_t)];
           Message msg((uint64_t)Message::MsgType::CardNumbers,
             card_index, buffer + sizeof(uint64_t) * 2);
-          msg.getCardNumbers(&m_cards_numbers[i].operator[](card_index));
+          msg.getCardNumbers(&m_players_states[i].cards_numbers[card_index]);
         }
       }
     }
@@ -211,7 +175,7 @@ Server::State Server::getState() const {
 uint8_t Server::getConnectedPlayers() const {
   uint8_t count = 0;
   for (uint8_t i = 0; i < MAX_PLAYERS; ++i) {
-    if (m_connected_players[i] == true) {
+    if (m_players_states[i].connected == true) {
       ++count;
     }
   }

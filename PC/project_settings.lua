@@ -73,16 +73,16 @@ solution "Project"
       defines { "DEBUG" }
       flags { "Symbols", "ExtraWarnings" }
       links {
-        -- "sfml-system-d",
-        -- "sfml-window-d",
-        -- "sfml-graphics-d",
-        -- "sfml-audio-d",
-        -- "sfml-network-d",
-        "sfml-system",
-        "sfml-window",
-        "sfml-graphics",
-        "sfml-audio",
-        "sfml-network",
+        "sfml-system-d",
+        "sfml-window-d",
+        "sfml-graphics-d",
+        "sfml-audio-d",
+        "sfml-network-d",
+        -- "sfml-system",
+        -- "sfml-window",
+        -- "sfml-graphics",
+        -- "sfml-audio",
+        -- "sfml-network",
       }
 
     configuration "release"
@@ -147,16 +147,16 @@ solution "Project"
       defines { "DEBUG" }
       flags { "Symbols", "ExtraWarnings" }
       links {
-        -- "sfml-system-d",
-        -- "sfml-window-d",
-        -- "sfml-graphics-d",
-        -- "sfml-audio-d",
-        -- "sfml-network-d",
-        "sfml-system",
-        "sfml-window",
-        "sfml-graphics",
-        "sfml-audio",
-        "sfml-network",
+        "sfml-system-d",
+        "sfml-window-d",
+        "sfml-graphics-d",
+        "sfml-audio-d",
+        "sfml-network-d",
+        -- "sfml-system",
+        -- "sfml-window",
+        -- "sfml-graphics",
+        -- "sfml-audio",
+        -- "sfml-network",
       }
 
     configuration "release"

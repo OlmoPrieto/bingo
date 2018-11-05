@@ -22,16 +22,19 @@ public:
   ~Server();
 
   void update(float dt);
-  float lastFrameTime() const;
   State getState() const;
   uint8_t getConnectedPlayers() const;
 
 private:
   struct PlayerState {
-    sf::IpAddress ip_address; 
+    std::vector<std::vector<uint8_t> > cards_numbers;
+    sf::IpAddress ip_address;
+    uint8_t connection_state = 0;
+    uint8_t cards_bought = 0;
+    bool connected = false;
   };
 
-  uint8_t connectionHandshake(uint8_t socket_index, 
+  void connectionHandshake(uint8_t socket_index, 
     Message::MsgType msg_type = Message::MsgType::Handshake);
   void startingState();
   void buyTimeState(float dt);
@@ -39,12 +42,13 @@ private:
   void errorState();
 
   sf::UdpSocket m_sockets[MAX_PLAYERS];
-  std::vector<std::vector<uint8_t> > m_cards_numbers[MAX_PLAYERS];  // one for each player
+  //std::vector<std::vector<uint8_t> > m_cards_numbers[MAX_PLAYERS];  // one for each player
+  PlayerState m_players_states[MAX_PLAYERS];
   State m_state;
   float m_remaining_buy_time = 30.0f * 1000.0f; // 30 seconds * milliseconds/seconds
-  uint8_t m_players_connection_state[MAX_PLAYERS] = { 0 };
-  uint8_t m_cards_bought[MAX_PLAYERS] = { 0 };
-  bool m_connected_players[MAX_PLAYERS] = { false };
+  //uint8_t m_players_connection_state[MAX_PLAYERS] = { 0 };
+  //uint8_t m_cards_bought[MAX_PLAYERS] = { 0 };
+  //bool m_connected_players[MAX_PLAYERS] = { false };
 };
 
 #endif // __SERVER_H__
