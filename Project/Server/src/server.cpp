@@ -5,44 +5,51 @@
 Server::Server() {
   m_state = State::Starting;
 
-  m_sockets[0].bind(14194);
-  m_sockets[0].setBlocking(false);
-
-  m_sockets[1].bind(14196);
-  m_sockets[1].setBlocking(false);
+  m_socket.bind(14194);
+  m_socket.setBlocking(false);
 }
 
 Server::~Server() {
 
 }
 
-void Server::connectionHandshake(uint8_t socket_index, Message::MsgType msg_type) {
+void Server::connectionHandshake(Message::MsgType msg_type) {
   uint64_t bytes_received = 0;
   uint16_t client_port = 14195;
   uint8_t buffer[1024]; // 80 bytes should do, though
   sf::IpAddress ip_address;
   memset(buffer, 0, 1024);
-  if (m_sockets[socket_index].receive(buffer, (uint64_t)1024, bytes_received,
+  if (m_socket.receive(buffer, (uint64_t)1024, bytes_received,
     ip_address, client_port) == sf::Socket::Status::Done) {
-
-    if (m_players_states[socket_index].ip_address == sf::IpAddress::Any) {
-      m_players_states[socket_index].ip_address = ip_address;
+    
+    // TODO: continue here
+    int8_t player_id = getPlayerIDByIpAddress(ip_address.toString());
+    if (player_id == -1) {
+      player_id = 0;
+      for (uint8_t i = 0; i < MAX_PLAYERS; ++i) {
+        if (m_players_states[i].player_id != -1) {
+          ++player_id;
+        }
+      }
+      m_players_states[player_id].ip_address = ip_address;
+      m_players_states[player_id].player_id = player_id;
+      player_id = m_players_states[player_id].player_id;
     }
 
     // Check if the received packet contains a connecting request
     uint64_t header = (uint64_t)buffer[0];
     if ((Message::MsgType)header == msg_type) {
       uint64_t data_received = (uint64_t)buffer[sizeof(uint64_t)];
-      if (data_received > m_players_states[socket_index].connection_state) {
-        m_players_states[socket_index].connection_state = data_received;
+      if (data_received > m_players_states[player_id].connection_state) {
+        m_players_states[player_id].connection_state = data_received;
       }
 
       memset(buffer, 0, 1024);
       Message msg((uint64_t)msg_type,
-        m_players_states[socket_index].connection_state + 1, nullptr);
+        m_players_states[player_id].connection_state + 1, nullptr);
       msg.fillBuffer(buffer, 1024);
-      m_sockets[socket_index].send(buffer, (uint64_t)1024,
-        m_players_states[socket_index].ip_address, client_port);
+      m_socket.send(buffer, (uint64_t)1024,
+        m_players_states[player_id].ip_address, client_port);
     }
   }
 }
@@ -50,7 +57,7 @@ void Server::connectionHandshake(uint8_t socket_index, Message::MsgType msg_type
 void Server::startingState() {
   if (getConnectedPlayers() < 1) {
     for (uint8_t i = 0; i < MAX_PLAYERS; ++i) {
-      connectionHandshake(i, Message::MsgType::ConnectionRequest);
+      connectionHandshake(Message::MsgType::ConnectionRequest);
       if (m_players_states[i].connection_state >= 3) {
         m_players_states[i].connected = true;
         m_players_states[i].connection_state = 0; // to reuse it later
@@ -78,13 +85,13 @@ void Server::buyTimeState(float dt) {
     Message msg((uint64_t)Message::MsgType::CurrentBuyingTime,
       (uint64_t)(std::round(m_remaining_buy_time * 0.001f)), nullptr);
     msg.fillBuffer(buffer, 1024);
-    m_sockets[i].send(buffer, (uint64_t)1024,
+    m_socket.send(buffer, (uint64_t)1024,
       m_players_states[i].ip_address, client_port);
   
     // Check for bought cards messages
     bytes_received = 0;
     memset(buffer, 0, 1024);
-    if (m_sockets[i].receive(buffer, (uint64_t)1024, bytes_received,
+    if (m_socket.receive(buffer, (uint64_t)1024, bytes_received,
         ip_address, client_port) == sf::Socket::Status::Done) {
 
       // Check if the received packet contains a card bought message
@@ -98,7 +105,7 @@ void Server::buyTimeState(float dt) {
     if (m_players_states[i].cards_bought > 0) {
       bytes_received = 0;
       memset(buffer, 0, 1024);
-      if (m_sockets[i].receive(buffer, (uint64_t)1024, bytes_received,
+      if (m_socket.receive(buffer, (uint64_t)1024, bytes_received,
         ip_address, client_port) == sf::Socket::Status::Done) {
 
         // Check if the received packet contains a card numbers message
@@ -151,4 +158,14 @@ uint8_t Server::getConnectedPlayers() const {
   }
 
   return count;
+}
+
+int8_t Server::getPlayerIDByIpAddress(const std::string& ip_address) {
+  for (uint8_t i = 0; i < MAX_PLAYERS; ++i) {
+    if (m_players_states[i].ip_address.toString() == ip_address) {
+      return i;
+    }
+  }
+
+  return -1;
 }
