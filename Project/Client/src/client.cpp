@@ -1,7 +1,5 @@
 #include "client.h"
 
-#include "utils.h"
-
 Client::Client() {
   m_state = State::Starting;
   m_socket.bind(14195);
@@ -33,30 +31,56 @@ void Client::setWindowRef(sf::RenderWindow* window) {
   m_window_ref = window;
 }
 
-void Client::startingState() {
-  if (m_connected == false) {
-    uint64_t bytes_received = 0;
-    uint16_t server_port = 14194;
-    uint8_t buffer[1024]; // 80 bytes should do, though
-    sf::IpAddress ip_address = sf::IpAddress::LocalHost;
-    memset(buffer, 0, 1024);
-    Message msg((uint64_t)Message::MsgType::ConnectionRequest,
-      m_connection_state + 1, nullptr);
-    msg.fillBuffer(buffer, 1024);
-    m_socket.send(buffer, (uint64_t)1024, 
-      ip_address, server_port);
+void Client::connectionHandshake(Message::MsgType msg_type) {
+  uint64_t bytes_received = 0;
+  uint16_t server_port = 14194;
+  uint8_t buffer[1024]; // 80 bytes should do, though
+  sf::IpAddress ip_address = sf::IpAddress::LocalHost;
+  memset(buffer, 0, 1024);
+  Message msg((uint64_t)msg_type,
+    m_connection_state + 1, nullptr);
+  msg.fillBuffer(buffer, 1024);
+  m_socket.send(buffer, (uint64_t)1024,
+    ip_address, server_port);
 
-    memset(buffer, 0, 1024);
-    if (m_socket.receive(buffer, (uint64_t)1024, bytes_received,
-      ip_address, server_port) == sf::Socket::Status::Done) {
-      uint64_t header = (uint64_t)buffer[0];
-      if ((Message::MsgType)header == Message::MsgType::ConnectionRequest) {
-        uint64_t data_received = (uint64_t)buffer[sizeof(uint64_t)];
-        if (data_received > m_connection_state) {
-          m_connection_state = data_received;
-        }
+  memset(buffer, 0, 1024);
+  if (m_socket.receive(buffer, (uint64_t)1024, bytes_received,
+    ip_address, server_port) == sf::Socket::Status::Done) {
+    uint64_t header = (uint64_t)buffer[0];
+    if ((Message::MsgType)header == msg_type) {
+      uint64_t data_received = (uint64_t)buffer[sizeof(uint64_t)];
+      if (data_received > m_connection_state) {
+        m_connection_state = data_received;
       }
     }
+  }
+}
+
+void Client::startingState() {
+  if (m_connected == false) {
+    //uint64_t bytes_received = 0;
+    //uint16_t server_port = 14194;
+    //uint8_t buffer[1024]; // 80 bytes should do, though
+    //sf::IpAddress ip_address = sf::IpAddress::LocalHost;
+    //memset(buffer, 0, 1024);
+    //Message msg((uint64_t)Message::MsgType::ConnectionRequest,
+    //  m_connection_state + 1, nullptr);
+    //msg.fillBuffer(buffer, 1024);
+    //m_socket.send(buffer, (uint64_t)1024, 
+    //  ip_address, server_port);
+
+    //memset(buffer, 0, 1024);
+    //if (m_socket.receive(buffer, (uint64_t)1024, bytes_received,
+    //  ip_address, server_port) == sf::Socket::Status::Done) {
+    //  uint64_t header = (uint64_t)buffer[0];
+    //  if ((Message::MsgType)header == Message::MsgType::ConnectionRequest) {
+    //    uint64_t data_received = (uint64_t)buffer[sizeof(uint64_t)];
+    //    if (data_received > m_connection_state) {
+    //      m_connection_state = data_received;
+    //    }
+    //  }
+    //}
+    connectionHandshake(Message::MsgType::ConnectionRequest);
   }
 
   if (m_connection_state >= 3) {
@@ -187,22 +211,24 @@ void Client::buyTimeState() {
     m_confirm_purchase_button_was_pressed = purchase_button_pressed;
   }
   else {  // If not displaying buttons, the bought cards are displayed
-    if (m_connection_state >= 0 && m_connection_state <= 3) { // 4 ??
-      // connectionHandshake(Message::MsgType::BoughtCardsConfirmation);
+    if (m_bought_cards_sent == false) {
+        if (m_connection_state > 0) {
+          connectionHandshake(Message::MsgType::BoughtCardsConfirmation);
+          if (m_connection_state >= 3) {
+            m_bought_cards_sent = true;
+            m_connection_state = 0;
+          }
+        }
+        else {
+          memset(buffer, 0, 1024);
+          Message msg((uint64_t)Message::MsgType::BoughtCards,
+            m_cards_bought, nullptr);
+          msg.fillBuffer(buffer, 1024);
+          m_socket.send(buffer, 1024, ip_address, server_port);
+          connectionHandshake(Message::MsgType::BoughtCardsConfirmation);
+        }
+      }
     }
-    //else if (m_connection_state > 0) {
-    //  // The first time and until the server has received the 
-    //  // BoughtCards message, the code will go through the else {}
-
-    //}
-    else {
-      memset(buffer, 0, 1024);
-      Message msg((uint64_t)Message::MsgType::BoughtCards,
-        m_cards_bought, nullptr);
-      msg.fillBuffer(buffer, 1024);
-      m_socket.send(buffer, 1024, ip_address, server_port);
-    }
-  }
 }
 
 void Client::gameState() {

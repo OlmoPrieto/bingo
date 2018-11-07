@@ -7,6 +7,7 @@
 
 #include "button.h"
 #include "card.h"
+#include "utils.h"
 
 constexpr uint8_t MAX_BUYABLE_CARDS = 4;
 
@@ -29,6 +30,8 @@ public:
   State getState() const;
 
 private:
+  void connectionHandshake(Message::MsgType msg_type =
+    Message::MsgType::Handshake);
   void startingState();
   void buyTimeState();
   void gameState();
@@ -55,6 +58,7 @@ private:
   bool m_plus_button_was_pressed = false;
   bool m_minus_button_was_pressed = false;
   bool m_confirm_purchase_button_was_pressed = false;
+  bool m_bought_cards_sent = false;
 };
 
 #endif  // __CLIENT_H__

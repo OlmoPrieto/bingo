@@ -91,26 +91,35 @@ void Server::buyTimeState(float dt) {
     bytes_received = 0;
     memset(buffer, 0, 1024);
     if (m_socket.receive(buffer, (uint64_t)1024, bytes_received,
-        ip_address, client_port) == sf::Socket::Status::Done) {
+      ip_address, client_port) == sf::Socket::Status::Done) {
 
-      // Check if the received packet contains a card bought message
-      uint64_t header = (uint64_t)buffer[0];
-      if (m_players_states[i].cards_bought == 0) {
-      // However, a player can buy zero cards and when the time runs out,
-      // the game will continue (if the other player bought at least one).
-      // So maybe the code will keep entering here for this particular player
-      // but when the time runs out the code will continue.
+      int8_t player_id = getPlayerIDByIpAddress(ip_address.toString());
+
+      if (m_players_states[player_id].cards_bought == 0) {
+        // However, a player can buy zero cards and when the time runs out,
+        // the game will continue (if the other player bought at least one).
+        // So maybe the code will keep entering here for this particular player
+        // but when the time runs out the code will continue.
+      
+        // Check if the received packet contains a card bought message
+        uint64_t header = (uint64_t)buffer[0];
         if ((Message::MsgType)header == Message::MsgType::BoughtCards) {
-          m_players_states[i].cards_bought = (uint64_t)buffer[sizeof(uint64_t)];
+          m_players_states[player_id].cards_bought = 
+            (uint64_t)buffer[sizeof(uint64_t)];
+          connectionHandshake(Message::MsgType::BoughtCardsConfirmation);
         }
       }
       else {
-        connectionHandshake(Message::MsgType::BoughtCardsConfirmation);
-        if (m_players_states[i].connection_state >= 3) {
-          // Player X cards bought confirmed
-          printf("Player %d bought %u cards\n", 
-            m_players_states[i].player_id,
-            m_players_states[i].cards_bought);
+        if (m_players_states[player_id].connection_state > 0) {
+          connectionHandshake(Message::MsgType::BoughtCardsConfirmation);
+          if (m_players_states[player_id].connection_state >= 3) {
+            // Player X cards bought confirmed
+            printf("Player %d bought %u cards\n", 
+              m_players_states[player_id].player_id,
+              m_players_states[player_id].cards_bought);
+
+            m_players_states[player_id].connection_state = 0;
+          }
         }
       }
     }
