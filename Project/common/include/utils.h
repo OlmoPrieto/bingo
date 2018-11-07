@@ -7,21 +7,22 @@
 class Message {
 public:
   enum class MsgType {
-    ConnectionRequest = 0,  // + Status   -> [1, 3]
-    Handshake,              // + Status   -> [1, 3]
-    CurrentBuyingTime,      // + Current  -> [0, X]
-    BoughtCards,            // + Amount   -> [0, 4]
-    BoughtCardsReceived,    // + Status   -> [1, 1]
-    CardNumbers,            // + CardID   -> [0, 3]   + 15 numbers separated by '#'
-    CardNumbersReceived,    // + Status   -> [1, 1]
-    NumberWithdrawn,        // + Current  -> [1, 90]
-    LineScored,             // + Player   -> [1, 2]
-    BingoScored,            // + Player   -> [1, 2]
+    ConnectionRequest = 0,    // + Status   -> [1, 3]
+    Handshake,                // + Status   -> [1, 3]
+    CurrentBuyingTime,        // + Current  -> [0, X]
+    BoughtCards,              // + Amount   -> [0, 4]
+    BoughtCardsConfirmation,  // + Status   -> [1, 3]
+    CardNumbers,              // + CardID   -> [0, 3]   + 15 numbers separated by '#'
+    CardNumbersReceived,      // + Status   -> [1, 3]
+    NumberWithdrawn,          // + Current  -> [1, 90]
+    LineScored,               // + Player   -> [1, 2]
+    BingoScored,              // + Player   -> [1, 2]
   };
 
   Message() {
 
   }
+
   Message(uint64_t header, uint64_t data, uint8_t* extra) {
     m_header = header;
     m_data = data;

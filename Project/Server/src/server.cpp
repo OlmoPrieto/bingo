@@ -22,7 +22,6 @@ void Server::connectionHandshake(Message::MsgType msg_type) {
   if (m_socket.receive(buffer, (uint64_t)1024, bytes_received,
     ip_address, client_port) == sf::Socket::Status::Done) {
     
-    // TODO: continue here
     int8_t player_id = getPlayerIDByIpAddress(ip_address.toString());
     if (player_id == -1) {
       player_id = 0;
@@ -36,7 +35,7 @@ void Server::connectionHandshake(Message::MsgType msg_type) {
       player_id = m_players_states[player_id].player_id;
     }
 
-    // Check if the received packet contains a connecting request
+    // Check if the received packet contains the requested message
     uint64_t header = (uint64_t)buffer[0];
     if ((Message::MsgType)header == msg_type) {
       uint64_t data_received = (uint64_t)buffer[sizeof(uint64_t)];
@@ -88,7 +87,7 @@ void Server::buyTimeState(float dt) {
     m_socket.send(buffer, (uint64_t)1024,
       m_players_states[i].ip_address, client_port);
   
-    // Check for bought cards messages
+    // Check for bought cards messages && its handshake
     bytes_received = 0;
     memset(buffer, 0, 1024);
     if (m_socket.receive(buffer, (uint64_t)1024, bytes_received,
@@ -96,8 +95,23 @@ void Server::buyTimeState(float dt) {
 
       // Check if the received packet contains a card bought message
       uint64_t header = (uint64_t)buffer[0];
-      if ((Message::MsgType)header == Message::MsgType::BoughtCards) {
-        m_players_states[i].cards_bought = (uint64_t)buffer[sizeof(uint64_t)];
+      if (m_players_states[i].cards_bought == 0) {
+      // However, a player can buy zero cards and when the time runs out,
+      // the game will continue (if the other player bought at least one).
+      // So maybe the code will keep entering here for this particular player
+      // but when the time runs out the code will continue.
+        if ((Message::MsgType)header == Message::MsgType::BoughtCards) {
+          m_players_states[i].cards_bought = (uint64_t)buffer[sizeof(uint64_t)];
+        }
+      }
+      else {
+        connectionHandshake(Message::MsgType::BoughtCardsConfirmation);
+        if (m_players_states[i].connection_state >= 3) {
+          // Player X cards bought confirmed
+          printf("Player %d bought %u cards\n", 
+            m_players_states[i].player_id,
+            m_players_states[i].cards_bought);
+        }
       }
     }
 
@@ -110,6 +124,7 @@ void Server::buyTimeState(float dt) {
 
         // Check if the received packet contains a card numbers message
         uint64_t header = (uint64_t)buffer[0];
+        //if (m_players_states[i].confirmed_cards )
         if ((Message::MsgType)header == Message::MsgType::CardNumbers) {
           uint64_t card_index = (uint64_t)buffer[sizeof(uint64_t)];
           Message msg((uint64_t)Message::MsgType::CardNumbers,

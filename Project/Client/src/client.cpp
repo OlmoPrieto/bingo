@@ -187,7 +187,21 @@ void Client::buyTimeState() {
     m_confirm_purchase_button_was_pressed = purchase_button_pressed;
   }
   else {  // If not displaying buttons, the bought cards are displayed
+    if (m_connection_state >= 0 && m_connection_state <= 3) { // 4 ??
+      // connectionHandshake(Message::MsgType::BoughtCardsConfirmation);
+    }
+    //else if (m_connection_state > 0) {
+    //  // The first time and until the server has received the 
+    //  // BoughtCards message, the code will go through the else {}
 
+    //}
+    else {
+      memset(buffer, 0, 1024);
+      Message msg((uint64_t)Message::MsgType::BoughtCards,
+        m_cards_bought, nullptr);
+      msg.fillBuffer(buffer, 1024);
+      m_socket.send(buffer, 1024, ip_address, server_port);
+    }
   }
 }
 
