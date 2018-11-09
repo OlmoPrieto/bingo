@@ -12,8 +12,8 @@ public:
     CurrentBuyingTime,        // + Current  -> [0, X]
     BoughtCards,              // + Amount   -> [0, 4]
     BoughtCardsConfirmation,  // + Status   -> [1, 3]
-    CardNumbers,              // + CardID   -> [0, 3]   + 15 numbers separated by '#'
-    CardNumbersReceived,      // + Status   -> [1, 3]
+    CardNumbers,              // + Amount   -> [1, 4]   + [15, 60] numbers separated by '#'
+    CardNumbersConfirmation,  // + Status   -> [1, 3]
     NumberWithdrawn,          // + Current  -> [1, 90]
     LineScored,               // + Player   -> [1, 2]
     BingoScored,              // + Player   -> [1, 2]
@@ -53,29 +53,31 @@ public:
     }
   }
 
-  void setCardNumbersField(const std::vector<uint8_t>& numbers) {
+  void setCardNumbersField(const std::vector<uint8_t>& numbers, uint8_t cards_amount) {
     if ((MsgType)m_header != MsgType::CardNumbers) {
       printf("ERROR: trying to set extra field in a message that is not of type CardNumbers\n");
     }
-    if (numbers.size() > 15) {
-      printf("ERROR: more than 15 numbers provided for the card\n");
-    }
 
-    for (uint64_t i = 0; i < numbers.size(); i += 2) {
-      m_extra[(uint8_t)i] = numbers[i];
-      m_extra[(uint8_t)i] = (uint8_t)('#');
+    for (uint64_t i = 0; i < numbers.size() * cards_amount; i += 2) {
+      m_extra[(uint8_t)i] = numbers[(uint8_t)(i * 0.5f)];
+      m_extra[(uint8_t)i + 1] = (uint8_t)('#');
     }
   }
 
-  void getCardNumbers(std::vector<uint8_t>* v) {
-    for (uint8_t i = 0; i < 29; i += 2) {  // 29 = 15 numbers + 14 '#'
-      v->push_back(m_extra[i]);
+  void getCardNumbers(std::vector<std::vector<uint8_t> >* vs, uint8_t cards_amount) {
+    std::vector<uint8_t> v;
+    for (uint8_t i = 0; i < cards_amount; ++i) {
+      for (uint8_t j = 0; j < 30; j += 2) {
+        v.push_back(m_extra[i * 30 + j]);
+      }
+      vs->push_back(v);
+      v.clear();
     }
   }
 
   uint64_t m_header = 0;
   uint64_t m_data = 0;
-  uint8_t  m_extra[64] = { 0 };
+  uint8_t  m_extra[30 * 4] = { 0 };
 };
 
 // Works by giving a path inside the resource folder

@@ -58,28 +58,6 @@ void Client::connectionHandshake(Message::MsgType msg_type) {
 
 void Client::startingState() {
   if (m_connected == false) {
-    //uint64_t bytes_received = 0;
-    //uint16_t server_port = 14194;
-    //uint8_t buffer[1024]; // 80 bytes should do, though
-    //sf::IpAddress ip_address = sf::IpAddress::LocalHost;
-    //memset(buffer, 0, 1024);
-    //Message msg((uint64_t)Message::MsgType::ConnectionRequest,
-    //  m_connection_state + 1, nullptr);
-    //msg.fillBuffer(buffer, 1024);
-    //m_socket.send(buffer, (uint64_t)1024, 
-    //  ip_address, server_port);
-
-    //memset(buffer, 0, 1024);
-    //if (m_socket.receive(buffer, (uint64_t)1024, bytes_received,
-    //  ip_address, server_port) == sf::Socket::Status::Done) {
-    //  uint64_t header = (uint64_t)buffer[0];
-    //  if ((Message::MsgType)header == Message::MsgType::ConnectionRequest) {
-    //    uint64_t data_received = (uint64_t)buffer[sizeof(uint64_t)];
-    //    if (data_received > m_connection_state) {
-    //      m_connection_state = data_received;
-    //    }
-    //  }
-    //}
     connectionHandshake(Message::MsgType::ConnectionRequest);
   }
 
@@ -211,24 +189,52 @@ void Client::buyTimeState() {
     m_confirm_purchase_button_was_pressed = purchase_button_pressed;
   }
   else {  // If not displaying buttons, the bought cards are displayed
+    // First, send how many cards you bought
     if (m_bought_cards_sent == false) {
-        if (m_connection_state > 0) {
-          connectionHandshake(Message::MsgType::BoughtCardsConfirmation);
-          if (m_connection_state >= 3) {
-            m_bought_cards_sent = true;
-            m_connection_state = 0;
-          }
-        }
-        else {
-          memset(buffer, 0, 1024);
-          Message msg((uint64_t)Message::MsgType::BoughtCards,
-            m_cards_bought, nullptr);
-          msg.fillBuffer(buffer, 1024);
-          m_socket.send(buffer, 1024, ip_address, server_port);
-          connectionHandshake(Message::MsgType::BoughtCardsConfirmation);
+      if (m_connection_state > 0) {
+        connectionHandshake(Message::MsgType::BoughtCardsConfirmation);
+        if (m_connection_state >= 3) {
+          m_bought_cards_sent = true;
+          m_connection_state = 0;
         }
       }
+      else {
+        memset(buffer, 0, 1024);
+        Message msg((uint64_t)Message::MsgType::BoughtCards,
+          m_cards_bought, nullptr);
+        msg.fillBuffer(buffer, 1024);
+        m_socket.send(buffer, 1024, ip_address, server_port);
+        connectionHandshake(Message::MsgType::BoughtCardsConfirmation);
+      }
     }
+    // Second, send the numbers so the server can check them
+    else if (m_numbers_checked == false) {
+      if (m_connection_state > 0) {
+        connectionHandshake(Message::MsgType::CardNumbersConfirmation);
+        if (m_connection_state >= 3) {
+          m_numbers_checked = true;
+          m_connection_state = 0;
+        }
+      }
+      else {
+        Message msg((uint64_t)Message::MsgType::CardNumbers,
+          m_cards_bought, nullptr);
+
+        std::vector<uint8_t> numbers;
+        for (uint8_t i = 0; i < m_cards_bought; ++i) {
+          for (uint8_t j = 0; j < 15; ++j) {
+            numbers.push_back(m_cards[i].getNumbers()[j]);
+          }
+        }
+        msg.setCardNumbersField(numbers, m_cards_bought);
+        memset(buffer, 0, 1024);
+        msg.fillBuffer(buffer, 1024);
+        
+        m_socket.send(buffer, 1024, ip_address, server_port);
+        //connectionHandshake(Message::MsgType::CardNumbersConfirmation);
+      }
+    }
+  }
 }
 
 void Client::gameState() {

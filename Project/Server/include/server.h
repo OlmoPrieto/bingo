@@ -34,10 +34,17 @@ private:
     uint8_t connection_state = 0;
     uint8_t cards_bought = 0;
     bool connected = false;
+    bool has_card_numbers_message = false;
+    bool check_cards_numbers = false;
   };
 
+  // Receives and then sends.
+  // If buffer isn't null, instead of receiving the funciton 
+  // will check the passed down message (contained in the buffer).
   void connectionHandshake(Message::MsgType msg_type = 
-    Message::MsgType::Handshake);
+    Message::MsgType::Handshake, uint8_t* buffer = nullptr, 
+    sf::IpAddress* remote_address = nullptr);
+  bool checkCard(uint8_t player_index, uint8_t card_index);
   void startingState();
   void buyTimeState(float dt);
   void gameState();
@@ -47,6 +54,7 @@ private:
   PlayerState m_players_states[MAX_PLAYERS];
   State m_state;
   float m_remaining_buy_time = 30.0f * 1000.0f; // 30 seconds * milliseconds/seconds
+  uint16_t m_client_port = 14195;
 };
 
 #endif // __SERVER_H__

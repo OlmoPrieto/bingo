@@ -7,7 +7,7 @@
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 
-constexpr uint8_t NUMBERS_AMOUT_IN_CARD = 15;
+constexpr uint8_t NUMBERS_AMOUNT_IN_CARD = 15;
 
 class Card {
 public:
@@ -19,14 +19,16 @@ public:
 
 	void draw(sf::RenderWindow* window);
 
+	uint8_t* getNumbers();
+
 private:
 	sf::RectangleShape m_shape;
 	sf::Font m_font;
-	sf::Text m_texts[NUMBERS_AMOUT_IN_CARD];
+	sf::Text m_texts[NUMBERS_AMOUNT_IN_CARD];
 	sf::Vector2f m_position;
 	sf::Vector2f m_size;
 	static std::mt19937 m_random_generator;
-	uint8_t m_numbers[NUMBERS_AMOUT_IN_CARD] = { 0 };
+	uint8_t m_numbers[NUMBERS_AMOUNT_IN_CARD] = { 0 };
 	static bool m_random_generator_seeded;
 };
 

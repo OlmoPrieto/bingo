@@ -22,7 +22,7 @@ Card::Card() {
 
 	m_font.loadFromFile(GetResourcePath("fonts/arial.ttf"));
 	
-	for (uint8_t i = 0; i < NUMBERS_AMOUT_IN_CARD; ++i) {
+	for (uint8_t i = 0; i < NUMBERS_AMOUNT_IN_CARD; ++i) {
 		m_texts[i].setFont(m_font);
 		m_texts[i].setCharacterSize(12.5f);
 		m_texts[i].setColor(sf::Color::Black);
@@ -39,7 +39,7 @@ Card::Card(const sf::Vector2f& size, const sf::Vector2f& position) {
 
 	m_font.loadFromFile(GetResourcePath("fonts/arial.ttf"));
 
-	for (uint8_t i = 0; i < NUMBERS_AMOUT_IN_CARD; ++i) {
+	for (uint8_t i = 0; i < NUMBERS_AMOUNT_IN_CARD; ++i) {
 		m_texts[i].setFont(m_font);
 	}
 
@@ -106,7 +106,11 @@ void Card::create(const sf::Vector2f& size,
 
 void Card::draw(sf::RenderWindow* window) {
 	window->draw(m_shape);
-	for (uint8_t i = 0; i < NUMBERS_AMOUT_IN_CARD; ++i) {
+	for (uint8_t i = 0; i < NUMBERS_AMOUNT_IN_CARD; ++i) {
 		window->draw(m_texts[i]);
 	}
+}
+
+uint8_t* Card::getNumbers() {
+	return m_numbers;
 }

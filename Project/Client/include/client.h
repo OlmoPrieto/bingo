@@ -31,7 +31,7 @@ public:
 
 private:
   void connectionHandshake(Message::MsgType msg_type =
-    Message::MsgType::Handshake);
+    Message::MsgType::Handshake); // Send and then receive
   void startingState();
   void buyTimeState();
   void gameState();
@@ -59,6 +59,7 @@ private:
   bool m_minus_button_was_pressed = false;
   bool m_confirm_purchase_button_was_pressed = false;
   bool m_bought_cards_sent = false;
+  bool m_numbers_checked = false;
 };
 
 #endif  // __CLIENT_H__
